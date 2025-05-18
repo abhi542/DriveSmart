@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Car Service Reminder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="header-container">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="logo">
+        <div class="title">
+            <h1>Car Service Reminder</h1>
+            <p>Keep track of your car maintenance easily</p>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="status-message {{ 'success' if category == 'success' else 'error' }}">
+              {{ msg }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="features">
+        {% if not user_data %}
+            <form method="POST">
+                <p><strong>Enter First Service Date:</strong></p>
+                <input type="date" name="first_service_date" required>
+                <div class="buttons">
+                    <button type="submit" class="btn">Submit</button>
+                </div>
+            </form>
+        {% else %}
+            <p><strong>Last Service Date:</strong> {{ user_data.last_service_date }}</p>
+            <p><strong>Next Service Date:</strong> {{ user_data.next_service_date }}</p>
+
+            <form method="POST">
+                <input type="hidden" name="log_service" value="1">
+                <button type="submit" class="btn">Log Today's Service</button>
+            </form>
+
+            <h2>Service History</h2>
+            <ul>
+                {% for date in user_data.history %}
+                    <li>{{ date }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <footer>
+        <p>&copy; 2025 CarCare App</p>
+    </footer>
+</body>
+</html>

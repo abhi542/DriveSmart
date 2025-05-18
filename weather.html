@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriveSmart Weather Route</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 600px; width: 100%; border-radius: 10px; margin-top: 20px; }
+        #weather-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: left;
+        }
+        #weather-info h3 {
+            color: #007bff;
+        }
+        #weather-info hr {
+            border: 0;
+            border-top: 1px solid #ccc;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DriveSmart Weather Forecast</h1>
+        <p class="sub-heading">Get weather and alerts along your driving route</p>
+
+        <form id="routeForm">
+            <label for="start">From:</label>
+            <input type="text" id="start" placeholder="Start location" required>
+            <label for="end">To:</label>
+            <input type="text" id="end" placeholder="Destination" required>
+            <button type="submit" class="btn">Show Route</button>
+        </form>
+
+        <div id="map"></div>
+        <div id="weather-info"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([12.9716, 77.5946], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        let routeLayer;
+        let weatherMarkers = [];
+
+        document.getElementById('routeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+
+            fetch(`/route-weather?start=${start}&end=${end}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) return alert(data.error);
+
+                    // Clear previous route and markers
+                    if (routeLayer) {
+                        map.removeLayer(routeLayer);
+                        routeLayer = null;
+                    }
+                    weatherMarkers.forEach(marker => map.removeLayer(marker));
+                    weatherMarkers = [];
+
+                    // Add new route
+                    routeLayer = L.polyline(data.route, { color: 'blue' }).addTo(map);
+                    map.fitBounds(routeLayer.getBounds());
+
+                    // Add markers and update weather info
+                    let infoHTML = `<h3>Route Summary</h3>
+                                    <p><strong>Distance:</strong> ${data.distance} km<br>
+                                    <strong>Duration:</strong> ${data.duration}</p>`;
+
+                    data.weather.forEach((point, index) => {
+                        const marker = L.marker([point.lat, point.lon]).addTo(map);
+                        marker.bindTooltip(`
+                            <strong>${point.location}</strong><br>
+                            Temp: ${point.temp}°C<br>
+                            ${point.description}<br>
+                            Alert: ${point.alert}
+                        `);
+                        weatherMarkers.push(marker);
+
+                        infoHTML += `<hr><p><strong>Point ${index + 1}</strong>: ${point.location}<br>
+                                     Temp: ${point.temp}°C, ${point.description}<br>
+                                     <strong>Alert:</strong> ${point.alert}</p>`;
+                    });
+
+                    document.getElementById('weather-info').innerHTML = infoHTML;
+                });
+        });
+    </script>
+</body>
+</html>

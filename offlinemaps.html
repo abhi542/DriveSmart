@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Maps</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Offline Maps</h1>
+        <p class="sub-heading">Generate map based on a location and access them anytime, anywhere!</p>
+        
+        <form method="POST" action="/offline_maps" class="map-form">
+            <label for="location">Enter Location:</label>
+            <input type="text" name="location" required placeholder="Enter city or address">
+            <button type="submit" class="btn">Find Nearby Places</button>
+        </form>
+
+        {% if map_path %}
+            <div class="map-preview">
+                <h3>✅ Map Generated Successfully!</h3>
+                <iframe src="{{ map_path }}" width="600" height="450" class="map-iframe"></iframe>
+            </div>
+        {% elif error %}
+            <div class="error-message">
+                <h3>⚠️ Error: {{ error }}</h3>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

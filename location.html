@@ -1,0 +1,372 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Location & Speed Tracker</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 900px;
+      margin: 30px auto;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    #coords, #speedDisplay {
+      margin-top: 15px;
+      font-size: 16px;
+      white-space: pre-line;
+      color: #333;
+    }
+
+    .error-message {
+      color: red;
+      display: none;
+    }
+
+    .success-message {
+      color: green;
+      display: none;
+    }
+
+    #map {
+      width: 100%;
+      height: 500px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    #recenterBtn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #recenterBtn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>📍 Live Location Tracker</h1>
+
+    <div id="coords">📍 Latitude: -, Longitude: -</div>
+    <div id="speedDisplay">🚗 Speed: - km/h</div>
+
+    <div id="error" class="error-message">⚠️ Error: Unable to fetch location</div>
+    <div id="success" class="success-message"></div>
+
+    <button id="recenterBtn">🔄 Recenter to My Location</button>
+
+    <div id="map"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    let map;
+    let marker;
+    let userLat = 0;
+    let userLon = 0;
+
+    function decimalToDMS(deg, isLat = true) {
+      const absolute = Math.abs(deg);
+      const degrees = Math.floor(absolute);
+      const minutesNotTruncated = (absolute - degrees) * 60;
+      const minutes = Math.floor(minutesNotTruncated);
+      const seconds = ((minutesNotTruncated - minutes) * 60).toFixed(2);
+
+      const direction = deg >= 0 
+        ? (isLat ? "N" : "E") 
+        : (isLat ? "S" : "W");
+
+      return `${degrees}°${minutes}'${seconds}" ${direction}`;
+    }
+
+    function initMap(lat, lon) {
+      if (!map) {
+        map = L.map('map').setView([lat, lon], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19
+        }).addTo(map);
+        marker = L.marker([lat, lon]).addTo(map);
+      } else {
+        marker.setLatLng([lat, lon]);
+      }
+    }
+
+    function updateCoordsDisplay(lat, lon) {
+      const dmsLat = decimalToDMS(lat, true);
+      const dmsLon = decimalToDMS(lon, false);
+      document.getElementById("coords").innerText = 
+        `📍 Latitude: ${lat.toFixed(10)}, Longitude: ${lon.toFixed(10)}\n` +
+        `🧭 DMS: ${dmsLat}, ${dmsLon}`;
+    }
+
+    function updateSpeedDisplay(speedMps) {
+      if (speedMps !== null && !isNaN(speedMps)) {
+        const speedKmph = (speedMps * 3.6).toFixed(2);
+        document.getElementById("speedDisplay").innerText = `🚗 Speed: ${speedKmph} km/h`;
+      } else {
+        document.getElementById("speedDisplay").innerText = `🚗 Speed: Not Available`;
+      }
+    }
+
+    function sendLocation(shouldRecenter = false) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          const speed = position.coords.speed;
+
+          userLat = lat;
+          userLon = lon;
+
+          updateCoordsDisplay(lat, lon);
+          updateSpeedDisplay(speed);  // 🔥 only this added
+
+          document.getElementById("success").style.display = "block";
+          document.getElementById("error").style.display = "none";
+
+          fetch('/update-location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ latitude: lat, longitude: lon })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (shouldRecenter) {
+              map.setView([data.latitude, data.longitude], 15);
+            }
+            initMap(data.latitude, data.longitude);
+          });
+        }, function () {
+          document.getElementById("error").style.display = "block";
+          document.getElementById("success").style.display = "none";
+          document.getElementById("coords").innerText = "⚠️ Error getting location.";
+        });
+      } else {
+        document.getElementById("coords").innerText = "❌ Geolocation not supported.";
+      }
+    }
+
+    sendLocation(true);
+    setInterval(() => sendLocation(false), 5000);
+
+    document.getElementById("recenterBtn").addEventListener("click", () => {
+      map.setView([userLat, userLon], 15);
+    });
+  </script>
+
+</body>
+</html>
+
+ -->
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+   <title>Live Location & Speed Tracker</title>
+ 
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+   <style>
+     body {
+       font-family: Arial, sans-serif;
+       margin: 0;
+       background-color: #f4f4f4;
+     }
+ 
+     .container {
+       width: 90%;
+       max-width: 900px;
+       margin: 30px auto;
+       text-align: center;
+     }
+ 
+     h1 {
+       margin-bottom: 10px;
+       color: #333;
+     }
+ 
+     #coords, #speedDisplay {
+       margin-top: 15px;
+       font-size: 16px;
+       white-space: pre-line;
+       color: #333;
+     }
+ 
+     .error-message {
+       color: red;
+       display: none;
+     }
+ 
+     .success-message {
+       color: green;
+       display: none;
+     }
+ 
+     #map {
+       width: 100%;
+       height: 500px;
+       border-radius: 10px;
+       margin-top: 20px;
+     }
+ 
+     #recenterBtn {
+       margin-top: 15px;
+       padding: 10px 20px;
+       font-size: 16px;
+       background-color: #007bff;
+       color: white;
+       border: none;
+       border-radius: 8px;
+       cursor: pointer;
+     }
+ 
+     #recenterBtn:hover {
+       background-color: #0056b3;
+     }
+   </style>
+ </head>
+ <body>
+ 
+   <div class="container">
+     <h1>📍 Live Location Tracker</h1>
+ 
+     <div id="coords">📍 Latitude: -, Longitude: -</div>
+     <div id="speedDisplay"></div>
+ 
+     <div id="error" class="error-message">⚠️ Error: Unable to fetch location</div>
+     <div id="success" class="success-message"></div>
+ 
+     <button id="recenterBtn">🔄 Recenter to My Location</button>
+ 
+     <div id="map"></div>
+   </div>
+ 
+   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+   <script>
+     let map;
+     let marker;
+     let userLat = 0;
+     let userLon = 0;
+ 
+     function decimalToDMS(deg, isLat = true) {
+       const absolute = Math.abs(deg);
+       const degrees = Math.floor(absolute);
+       const minutesNotTruncated = (absolute - degrees) * 60;
+       const minutes = Math.floor(minutesNotTruncated);
+       const seconds = ((minutesNotTruncated - minutes) * 60).toFixed(2);
+ 
+       const direction = deg >= 0 
+         ? (isLat ? "N" : "E") 
+         : (isLat ? "S" : "W");
+ 
+       return `${degrees}°${minutes}'${seconds}" ${direction}`;
+     }
+ 
+     function initMap(lat, lon) {
+       map = L.map('map').setView([lat, lon], 15);
+       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+         maxZoom: 19
+       }).addTo(map);
+       marker = L.marker([lat, lon]).addTo(map);
+     }
+ 
+     function updateCoordsDisplay(lat, lon) {
+       const dmsLat = decimalToDMS(lat, true);
+       const dmsLon = decimalToDMS(lon, false);
+       document.getElementById("coords").innerText = 
+         `📍 Latitude: ${lat.toFixed(10)}, Longitude: ${lon.toFixed(10)}\n` +
+         `🧭 DMS: ${dmsLat}, ${dmsLon}`;
+     }
+ 
+     function updateSpeedDisplay(speedMps) {
+       if (speedMps !== null && !isNaN(speedMps)) {
+         const speedKmph = (speedMps * 3.6).toFixed(2);
+         document.getElementById("speedDisplay").innerText = `🚗 Speed: ${speedKmph} km/h`;
+       } else {
+         document.getElementById("speedDisplay").innerText = ``;
+       }
+     }
+ 
+     function updateLocationOnMap(lat, lon) {
+       if (marker) {
+         marker.setLatLng([lat, lon]);
+       } else {
+         marker = L.marker([lat, lon]).addTo(map);
+       }
+     }
+ 
+     function sendLocation(shouldRecenter = false) {
+       if (navigator.geolocation) {
+         navigator.geolocation.getCurrentPosition(function (position) {
+           const lat = position.coords.latitude;
+           const lon = position.coords.longitude;
+           const speed = position.coords.speed;
+ 
+           userLat = lat;
+           userLon = lon;
+ 
+           updateCoordsDisplay(lat, lon);
+           updateSpeedDisplay(speed);
+ 
+           document.getElementById("success").style.display = "block";
+           document.getElementById("error").style.display = "none";
+ 
+           fetch('/update-location', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ latitude: lat, longitude: lon })
+           })
+           .then(response => response.json())
+           .then(data => {
+             if (!map) {
+               initMap(data.latitude, data.longitude);
+             } else {
+               updateLocationOnMap(data.latitude, data.longitude);
+               if (shouldRecenter) {
+                 map.setView([data.latitude, data.longitude], 15);
+               }
+             }
+           });
+         }, function () {
+           document.getElementById("error").style.display = "block";
+           document.getElementById("success").style.display = "none";
+           document.getElementById("coords").innerText = "⚠️ Error getting location.";
+         });
+       } else {
+         document.getElementById("coords").innerText = "❌ Geolocation not supported.";
+       }
+     }
+ 
+     sendLocation(true);
+     setInterval(() => sendLocation(false), 5000);
+ 
+     document.getElementById("recenterBtn").addEventListener("click", () => {
+       map.setView([userLat, userLon], 15);
+     });
+   </script>
+ 
+ </body>
+ </html>

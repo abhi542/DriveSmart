@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOS Alert</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>SOS Alert 🚨</h1>
+    <p>Press the button below to send an emergency alert.</p>
+
+    <div class="buttons">
+        <button id="sosButton" class="btn">Send SOS</button>
+        <a href="/" class="btn">Back to Home</a>
+    </div>
+
+    <div id="statusMessage" class="status-message"></div>
+
+    <script>
+        document.getElementById("sosButton").addEventListener("click", function() {
+            fetch("/send_sos")
+                .then(response => response.json())
+                .then(data => {
+                    const statusElement = document.getElementById("statusMessage");
+                    if (data.error) {
+                        statusElement.textContent = "Error: " + data.error;
+                        statusElement.classList.add("error");
+                    } else {
+                        statusElement.textContent = data.message;
+                        statusElement.classList.add("success");
+                        speakMessage("SOS alert has been sent.");
+                    }
+                })
+                .catch(error => {
+                    const statusElement = document.getElementById("statusMessage");
+                    statusElement.textContent = "Error: " + error.message;
+                    statusElement.classList.add("error");
+                });
+        });
+
+        function speakMessage(message) {
+            const speech = new SpeechSynthesisUtterance(message);
+            speech.lang = "en-US";
+            speech.rate = 1;
+            speech.pitch = 1;
+            window.speechSynthesis.speak(speech);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriveSmart - Your All-in-One Driving Companion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="DriveSmart Logo" class="logo">
+            <div class="title">
+                <h1>Welcome to DriveSmart 🚗</h1>
+                <p>Your smart assistant for safer and smarter driving.</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <p>Enhancing road safety with AI-powered drowsiness detection, real-time alerts, and emergency assistance.</p>
+        </section>
+
+        
+                <a href="/drowsiness" class="btn">Drowsiness Detection</a>
+                <a href="/sos" class="btn">SOS Alert</a>
+          
+                <a href="/route" class="btn">Route Optimization</a>
+                <a href="/offline_maps" class="btn">Offline Maps</a>
+           
+                <a href="/service_reminder" class="btn">Service Reminder</a>
+                <a href="/weather" class="btn">Weather</a> <!-- ✅ Added Weather Button -->
+           
+                <a href="/location-tracker" class="btn">Location Tracker</a> <!-- ✅ Added Location Tracker Button -->
+          
+    </main>
+
+    <footer>
+        <p>&copy; 2025 DriveSmart. All rights reserved.</p>
+    </footer>
+</body>
+</html>
